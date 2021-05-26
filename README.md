@@ -5,7 +5,7 @@ https://www.youtube.com/watch?v=j1mh0or2CX8 This video was used to make the Goog
 
 The Google Calendar token is what allows for the python code to access your Google Calendar and communicate with the Google Calendar servers to add/receive/modify data.
 
-You'll need to make your GCal token before setting up the rest of the Python script
+You'll need to make your GCal token before setting up the rest of the Python script. Use the GCalToken.py file to create your token when you have downloaded the JSON credentials (follow the above youtube video). 
 
 I'm not sure if this is the first one out there, but it is the only 2-way synchronous project I could find so that's pretty cool :)
 
