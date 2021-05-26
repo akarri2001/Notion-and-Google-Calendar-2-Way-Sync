@@ -10,7 +10,7 @@ import pickle
 
 ###Change these things: 
 #- The stuff below 
-# line 185 & line 344 -> change it to the appropriate time zone based on Google Calendar's timezones
+# line 185 & line 344 -> change it to the appropriate time zone based on Google Calendar's timezones formatted as an IANA Time Zone Database name, e.g. “Europe/Zurich”.
 # line 184 & line 343 -> change it if you don't want the default time to be 1 hour for each task
 # line 532 & line 541 & line 547 & line 605 & line 627-> adjust the last 5 characters to be representative of your time zone
 
