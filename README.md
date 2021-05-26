@@ -1,5 +1,5 @@
 # Notion-and-Google-Calendar-2-Way-Sync
-2 Way Sync Between Notion Database and Google Calendar
+2 Way Sync Between a Notion Database and Google Calendar
 
 https://www.youtube.com/watch?v=j1mh0or2CX8 This video was used to make the Google Calendar token. Note that the library names that they "pip installed" are outdated so look at the python file to see what you'll actually need to pip install onto your computer.
 
