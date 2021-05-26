@@ -16,7 +16,7 @@ import pickle
 
 NOTION_TOKEN =  #the secret_something 
 database_id =  #get the mess of numbers before the "?" on your dashboard URL and then split it into 8-4-4-4-12 characters between each dash
-notion_time =  #has to be adjusted for when daylight savings is different
+notion_time =  datetime.now().strftime("%Y-%m-%dT%H:%M:%S-04:00") #has to be adjusted for when daylight savings is different
 #^^ This is for America/New York when it's daylight savings
 
 urlRoot =  #open up a task and then copy the URL root up to the "p="
