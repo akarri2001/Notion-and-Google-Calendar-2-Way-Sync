@@ -1,32 +1,39 @@
 import os
 from notion_client import Client
-from pprint import pprint
 from datetime import datetime, timedelta, date
-import time
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 import pickle
 
 
-NOTION_TOKEN =  #the secret_something 
-database_id =  #get the mess of numbers before the "?" on your dashboard URL and then split it into 8-4-4-4-12 characters between each dash
-notion_time =  #has to be adjusted for when daylight savings is different
+###########################################################################
+##### The Set-Up Section. Please follow the comments to understand the code. 
+###########################################################################
+
+
+NOTION_TOKEN = "" #the secret_something from Notion Integration
+database_id = "" #get the mess of numbers before the "?" on your dashboard URL and then split it into 8-4-4-4-12 characters between each dash
+
 #^^ This is for America/New York when it's daylight savings
 
-urlRoot =  #open up a task and then copy the URL root up to the "p="
-GCalTokenLocation =  #This is the command you will be feeding into the command prompt to run the GCalToken program
+urlRoot = 'https://www.notion.so/akarri/47c0977120094511b0ab6cbf68b20c57?v=21c35762ede544818692acb1e8deefed&p=' #open up a task and then copy the URL root up to the "p="
+
+GCalTokenScriptAndLocation = "python THE_PATH_TO_THE_GCALTOKEN.PY_SCRIPT" #This is the command you will be feeding into the command prompt to run the GCalToken program
 
 #GCal Set Up Part
-calendarID =  #The GCal calendar id. The format is something like "sldkjfliksedjgodsfhgshglsj@groups.calendar.google.com"
-credentialsLocation = #This is where you keep the pickle file that has the Google Calendar Credentials
-
-
+calendarID = '' #The GCal calendar id. The format is something like "sldkjfliksedjgodsfhgshglsj@groups.calendar.google.com"
+credentialsLocation = "" #This is where you keep the pickle file that has the Google Calendar Credentials
 
 
 DEFAULT_EVENT_LENGTH = 60 #This is how many minutes the default event length is. Feel free to change it as you please
+timezone = 'America/New_York' #Choose your respective time zone: http://www.timezoneconverter.com/cgi-bin/zonehelp.tzc
 
+def notion_time():
+    return datetime.now().strftime("%Y-%m-%dT%H:%M:%S-04:00") #Change the last 5 characters to be representative of your timezone
+     #^^ has to be adjusted for when daylight savings is different if your area observes it
+    
 
-##### DATABASE SPECIFIC EDITS -- THIS IS NOT FINALIZED YET. PLEASE NAME YOUR NOTION DATABASE COLUMNS AS SHOWN HERE. AN UPDATE TO THIS CODE WILL COME IN THE NEXT WEEK.
+##### DATABASE SPECIFIC EDITS
 
 # There needs to be a few properties on the Notion Database for this to work. Replace the values of each variable with the string of what the variable is called on your Notion dashboard
 # The Last Edited Time column is a property of the notion pages themselves, you just have to make it a column
@@ -41,6 +48,12 @@ ExtraInfo_Notion_Name = 'Extra Info'
 On_GCal_Notion_Name = 'On GCal?'
 NeedGCalUpdate_Notion_Name = 'NeedGCalUpdate'
 GCalEventId_Notion_Name = 'GCal Event Id'
+LastUpdatedTime_Notion_Name  = 'Last Updated Time'
+
+
+#######################################################################################
+###               No additional user editing beyond this point is needed            ###
+#######################################################################################
 
 
 
@@ -123,7 +136,6 @@ def makeCalEvent(eventName, eventDescription, eventStartTime, sourceURL):
     else: #if you give a specific start time to the event
         eventStartTime = eventStartTime
     eventEndTime = eventStartTime + timedelta(minutes= DEFAULT_EVENT_LENGTH) 
-    timezone = 'America/New_York'
     event = {
         'summary': eventName,
         'description': eventDescription,
@@ -151,7 +163,6 @@ def makeCalEvent(eventName, eventDescription, eventStartTime, sourceURL):
 def upDateCalEvent(eventName, eventDescription, eventStartTime, sourceURL, eventId):
     
     eventEndTime = eventStartTime + timedelta(minutes= DEFAULT_EVENT_LENGTH)
-    timezone = 'America/New_York'
     event = {
         'summary': eventName,
         'description': eventDescription,
@@ -237,15 +248,15 @@ if len(resultList) > 0:
         print(el)
         print('\n')
 
-        TaskNames.append(el['properties']['Task']['title'][0]['text']['content'])
-        Dates.append(el['properties']['Date']['date']['start'])
+        TaskNames.append(el['properties'][Task_Notion_Name]['title'][0]['text']['content'])
+        Dates.append(el['properties'][Date_Notion_Name]['date']['start'])
         try:
-            Initiatives.append(el['properties']['Initiative']['select']['name'])
+            Initiatives.append(el['properties'][Initiative_Notion_Name]['select']['name'])
         except:
             Initiatives.append("")
         
         try: 
-            ExtraInfo.append(el['properties']['Extra Info']['rich_text'][0]['text']['content'])
+            ExtraInfo.append(el['properties'][ExtraInfo_Notion_Name]['rich_text'][0]['text']['content'])
         except:
             ExtraInfo.append("")
         URL_list.append(makeTaskURL(el['id'], urlRoot))
@@ -255,12 +266,12 @@ if len(resultList) > 0:
             **{
                 "page_id": pageId, 
                 "properties": {
-                    'On GCal?': {
+                    On_GCal_Notion_Name: {
                         "checkbox": True 
                     },
-                    'Last Updated Time': {
+                    LastUpdatedTime_Notion_Name: {
                         "date":{
-                            'start': notion_time,
+                            'start': notion_time(),
                             'end': None,
                         }
                     }
@@ -282,7 +293,7 @@ if len(resultList) > 0:
             **{
                 "page_id": pageId, 
                 "properties": {
-                    'GCal Event Id': {
+                    GCalEventId_Notion_Name: {
                         "rich_text": [{
                             'text': {
                                 'content': calEventIdList[i]
@@ -351,7 +362,7 @@ for result in resultList:
     print('\n')
     print(result)
     print('\n')
-    calId = result['properties']['GCal Event Id']['rich_text'][0]['text']['content']
+    calId = result['properties'][GCalEventId_Notion_Name]['rich_text'][0]['text']['content']
     print(calId)
     updatingCalEventIds.append(calId)
 
@@ -369,15 +380,15 @@ if len(resultList) > 0:
         print(el)
         print('\n')
 
-        TaskNames.append(el['properties']['Task']['title'][0]['text']['content'])
-        Dates.append(el['properties']['Date']['date']['start'])
+        TaskNames.append(el['properties'][Task_Notion_Name]['title'][0]['text']['content'])
+        Dates.append(el['properties'][Date_Notion_Name]['date']['start'])
         try:
-            Initiatives.append(el['properties']['Initiative']['select']['name'])
+            Initiatives.append(el['properties'][Initiative_Notion_Name]['select']['name'])
         except:
             Initiatives.append("")
         
         try: 
-            ExtraInfo.append(el['properties']['Extra Info']['rich_text'][0]['text']['content'])
+            ExtraInfo.append(el['properties'][ExtraInfo_Notion_Name]['rich_text'][0]['text']['content'])
         except:
             ExtraInfo.append("")
         URL_list.append(makeTaskURL(el['id'], urlRoot))
@@ -400,9 +411,9 @@ if len(resultList) > 0:
             **{
                 "page_id": pageId, 
                 "properties": {
-                    'Last Updated Time': {
+                    LastUpdatedTime_Notion_Name: {
                         "date":{
-                            'start': notion_time, #has to be adjusted for when daylight savings is different
+                            'start': notion_time(), #has to be adjusted for when daylight savings is different
                             'end': None,
                         }
                     }
@@ -416,7 +427,7 @@ else:
     print("Nothing new updated to GCal")
 
 
-
+  
 
 ###########################################################################
 ##### Part 3: Sync GCal event updates for events already in Notion back to Notion!
@@ -429,7 +440,7 @@ my_page = notion.databases.query(
         "filter": {
             "and": [
                 {
-                    "property": "NeedGCalUpdate", 
+                    "property": NeedGCalUpdate_Notion_Name, 
                     "formula":{
                         "checkbox":  {
                             "equals": False
@@ -437,7 +448,7 @@ my_page = notion.databases.query(
                     }
                 }, 
                 {
-                    "property": "On GCal?", 
+                    "property": On_GCal_Notion_Name, 
                     "checkbox":  {
                         "equals": True
                     }
@@ -445,13 +456,13 @@ my_page = notion.databases.query(
                 {
                     "or": [
                     {
-                        "property": "Date", 
+                        "property": Date_Notion_Name, 
                         "date": {
                             "equals": todayDate
                         }
                     }, 
                     {
-                        "property": "Date", 
+                        "property": Date_Notion_Name, 
                         "date": {
                             "next_week": {}
                         }
@@ -477,8 +488,8 @@ gCal_datetimes = []
 
 for result in resultList:
     notion_IDs_List.append(result['id']) 
-    notion_datetimes.append(result['properties']['Date']['date']['start'])
-    notion_gCal_IDs.append(result['properties']['GCal Event Id']['rich_text'][0]['text']['content'])
+    notion_datetimes.append(result['properties'][Date_Notion_Name]['date']['start'])
+    notion_gCal_IDs.append(result['properties'][GCalEventId_Notion_Name]['rich_text'][0]['text']['content'])
 
 
 #the reason we take off the last 6 characters is so we can focus in on just the date and time instead of any extra info
@@ -513,15 +524,15 @@ for i in range(len(new_notion_datetime)):
             **{
                 "page_id": notion_IDs_List[i], 
                 "properties": {
-                    'Date': {
+                    Date_Notion_Name: {
                         "date":{
                             'start': new_notion_datetime[i].strftime("%Y-%m-%dT%H:%M:%S-04:00"), #has to be adjsuted for when daylight savings is different
                             'end': None,
                         }
                     },
-                    'Last Updated Time': {
+                    LastUpdatedTime_Notion_Name: {
                         "date":{
-                            'start': notion_time, #has to be adjsuted for when daylight savings is different
+                            'start': notion_time(), #has to be adjsuted for when daylight savings is different
                             'end': None,
                         }
                     }
@@ -540,7 +551,7 @@ my_page = notion.databases.query(
     **{
         "database_id": database_id,
         "filter": {
-                "property": "GCal Event Id", 
+                "property": GCalEventId_Notion_Name, 
                 "text":  {
                     "is_not_empty": True
                 }
@@ -553,7 +564,7 @@ resultList = my_page['results']
 ALL_notion_gCal_Ids =[]
 
 for result in resultList:
-    ALL_notion_gCal_Ids.append(result['properties']['GCal Event Id']['rich_text'][0]['text']['content'])
+    ALL_notion_gCal_Ids.append(result['properties'][GCalEventId_Notion_Name]['rich_text'][0]['text']['content'])
 
 
 ##Get the GCal Ids and other Event Info from Google Calendar 
@@ -580,8 +591,8 @@ for item in calItems:
 for i in range(len(calIds)):
     if calIds[i] not in ALL_notion_gCal_Ids:
         # print(calName, ":", calIds[i])
-        
-        notion_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S-04:00")
+
+        # notion_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S-04:00")
 
         #Here, we create a new page for every new GCal event
         my_page = notion.pages.create(
@@ -590,7 +601,7 @@ for i in range(len(calIds)):
                     "database_id": database_id,
                 },
                 "properties": {
-                    'Task': {
+                    Task_Notion_Name: {
                         "type": 'title',
                         "title": [
                         {
@@ -601,21 +612,21 @@ for i in range(len(calIds)):
                         },
                         ],
                     },
-                    'Date': {
+                    Date_Notion_Name: {
                         "type": 'date',
                         'date': {
                             'start': calDates[i].strftime("%Y-%m-%dT%H:%M:%S-04:00"), 
                             'end': None,
                         }
                     },
-                    'Last Updated Time': {
+                    LastUpdatedTime_Notion_Name: {
                         "type": 'date',
                         'date': {
-                            'start': notion_time,
+                            'start': notion_time(),
                             'end': None,
                         }
                     },
-                    'Extra Info':  {
+                    ExtraInfo_Notion_Name:  {
                         "type": 'rich_text', 
                         "rich_text": [{
                             'text': {
@@ -623,7 +634,7 @@ for i in range(len(calIds)):
                             }
                         }]
                     },
-                    'GCal Event Id': {
+                    GCalEventId_Notion_Name: {
                         "type": "rich_text", 
                         "rich_text": [{
                             'text': {
@@ -631,17 +642,14 @@ for i in range(len(calIds)):
                             }
                         }]
                     }, 
-                    'On GCal?': {
+                    On_GCal_Notion_Name: {
                         "type": "checkbox", 
                         "checkbox": True
                     }
                 },
             },
         )
+        print(f'Added this event to Notion: {calName[i]}')
 
 #TO-DO:
-# - Replace each instance of notion_time with a function so it's more accurate
 
-# Replace the variable names in the search queries with the variables_notion_name variable defined at the top
-
-#timeZone for the makeCal and updateCal should go to the top
