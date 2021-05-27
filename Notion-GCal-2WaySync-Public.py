@@ -14,7 +14,6 @@ import pickle
 NOTION_TOKEN = "" #the secret_something from Notion Integration
 database_id = "" #get the mess of numbers before the "?" on your dashboard URL and then split it into 8-4-4-4-12 characters between each dash
 
-#^^ This is for America/New York when it's daylight savings
 
 urlRoot = 'https://www.notion.so/akarri/47c0977120094511b0ab6cbf68b20c57?v=21c35762ede544818692acb1e8deefed&p=' #open up a task and then copy the URL root up to the "p="
 
