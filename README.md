@@ -31,6 +31,8 @@ Future Updates:
 Some more visibility through some upvotes on my Reddit post would be appreciated and I think may bring along some new users to this resource! [Reddit Post](https://www.reddit.com/r/Notion/comments/nlj77o/its_finally_here_unlimited_2way_sync_with_google/)
 
 
+
+
 Use for those who want to take at implementing the code themselves:
 
 https://www.youtube.com/watch?v=j1mh0or2CX8 This video was used to make the Google Calendar token. Note that the library names that they "pip installed" are outdated so look at the python file to see what you'll actually need to pip install onto your computer.
