@@ -3,7 +3,7 @@
 
 WARNING: This repo will be undergoing a good bit of change to make more accessible for users of all skill levels. This is not a finished product and if you have suggestions, I would love them!
 
-REMINDER: No making monetary gain off of this product. The point of making this available was to make the tools accessible to everyone :)
+REMINDER: No making monetary gain off of this product. The point of making this available was to make the tools accessible to everyone
 
 I'm not sure if this is the first one out there, but it is the only 2-way synchronous project I could find so that's pretty cool :)
 
