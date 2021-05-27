@@ -24,7 +24,7 @@ When making events, the code will extract the event name, date/time, a category,
 
 
 Future Updates (dates subject to change)
-- Able to name the required Notion columns whatever you want and have the code work (By June 5th)
+- ~~Able to name the required Notion columns whatever you want and have the code work (By June 5th)~~ ✅
 - Able to add in end times and sync that across both platforms (by June 15th) 
 - Able to factor in recurring events (by end of June)
 - Video on how to install/use the tool for thoses who never coded (end of June/beginning of July)
