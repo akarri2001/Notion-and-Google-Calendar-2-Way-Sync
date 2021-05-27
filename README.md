@@ -16,7 +16,7 @@ The functionalities:
 - Take existing events from your Notion Dashboard and bring them over to Google Calendar
 - If the Notion event has only a date, then the GCal event is made at 8 am 
 - If the Notion even has a date and time, then the GCal event is made at the appropriate time
-- If the event is already in both GCal and Notion, but you switch the date/time on either, it will sync with the new value across both platforms
+- If the event is already in both GCal and Notion, but you switch the date/time on either, it will sync with the new value across both platforms (if both are changed, the value on Notion will overrule).
 - If the event is only in GCal, it will be brought over to Notion, as well as the description of the event that you add from GCal 
 
 When making events, the code will extract the event name, date/time, a category, and text from the Notion Dashboard and integrate that information into your GCal event. Additionally, it will also add a URL source code the GCal event so you can click on the URL and automatically be brought over to the specific Notion Page that your event is at. 
