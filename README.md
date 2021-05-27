@@ -22,7 +22,9 @@ The functionalities:
 
 When making events, the code will extract the event name, date/time, a category, and text from the Notion Dashboard and integrate that information into your GCal event. Additionally, it will also add a URL source code the GCal event so you can click on the URL and automatically be brought over to the specific Notion Page that your event is at. 
 
-
+\
+\
+\
 Future Updates (dates subject to change)
 - ~~Able to name the required Notion columns whatever you want and have the code work (By June 5th)~~ ✅
 - Able to add in end times and sync that across both platforms (by June 15th) 
