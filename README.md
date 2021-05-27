@@ -3,13 +3,12 @@
 
 WARNING: This repo will be undergoing a good bit of change to make more accessible for users of all skill levels. This is not a finished product and if you have suggestions, I would love them!
 
-https://www.youtube.com/watch?v=j1mh0or2CX8 This video was used to make the Google Calendar token. Note that the library names that they "pip installed" are outdated so look at the python file to see what you'll actually need to pip install onto your computer.
-
-The Google Calendar token is what allows for the python code to access your Google Calendar and communicate with the Google Calendar servers to add/receive/modify data.
-
-You'll need to make your GCal token before setting up the rest of the Python script. Use the GCalToken.py file to create your token when you have downloaded the JSON credentials (follow the above youtube video). 
 
 I'm not sure if this is the first one out there, but it is the only 2-way synchronous project I could find so that's pretty cool :)
+
+
+The Notion-GCal-2WaySync-Public.py code is HEAVILY commented to describe each part of the code. Follow along and you'll be able to get a quick understanding of what logic is used for each step of the script. 
+Use this Notion Template as reference: https://www.notion.so/akarri/47c0977120094511b0ab6cbf68b20c57?v=21c35762ede544818692acb1e8deefed
 
 
 The functionalities:
@@ -23,4 +22,19 @@ The functionalities:
 When making events, the code will extract the event name, date/time, a category, and text from the Notion Dashboard and integrate that information into your GCal event. Additionally, it will also add a URL source code the GCal event so you can click on the URL and automatically be brought over to the specific Notion Page that your event is at. 
 
 
+Future Updates:
+- Able to name the required Notion columns whatever you want and have the code work (By June 5th)
+- Able to add in end times and sync that across both platforms (by June 15th) 
+- Able to factor in recurring events (by end of June)
+- Video on how to install/use the tool for thoses who never coded (end of June/beginning of July)
+
 Some more visibility through some upvotes on my Reddit post would be appreciated and I think may bring along some new users to this resource! [Reddit Post](https://www.reddit.com/r/Notion/comments/nlj77o/its_finally_here_unlimited_2way_sync_with_google/)
+
+
+Use for those who want to take at implementing the code themselves:
+
+https://www.youtube.com/watch?v=j1mh0or2CX8 This video was used to make the Google Calendar token. Note that the library names that they "pip installed" are outdated so look at the python file to see what you'll actually need to pip install onto your computer.
+
+The Google Calendar token is what allows for the python code to access your Google Calendar and communicate with the Google Calendar servers to add/receive/modify data.
+
+You'll need to make your GCal token before setting up the rest of the Python script. Use the GCalToken.py file to create your token when you have downloaded the JSON credentials (follow the above youtube video). 
