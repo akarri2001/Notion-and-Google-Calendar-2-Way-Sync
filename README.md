@@ -22,11 +22,12 @@ The functionalities:
 When making events, the code will extract the event name, date/time, a category, and text from the Notion Dashboard and integrate that information into your GCal event. Additionally, it will also add a URL source code the GCal event so you can click on the URL and automatically be brought over to the specific Notion Page that your event is at. 
 
 
-Future Updates:
+Future Updates (dates subject to change)
 - Able to name the required Notion columns whatever you want and have the code work (By June 5th)
 - Able to add in end times and sync that across both platforms (by June 15th) 
 - Able to factor in recurring events (by end of June)
 - Video on how to install/use the tool for thoses who never coded (end of June/beginning of July)
+- Able to add different events to different calendars depending on a Notion column (up in the air)
 
 Some more visibility through some upvotes on my Reddit post would be appreciated and I think may bring along some new users to this resource! [Reddit Post](https://www.reddit.com/r/Notion/comments/nlj77o/its_finally_here_unlimited_2way_sync_with_google/)
 
