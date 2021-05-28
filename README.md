@@ -12,7 +12,6 @@ NEW FUNCTIONALITIES SINCE FIRST UPLOADING:
 - Ability to change timezones a lot easier 
 - Able to decide default length of new GCal events 
  
- /
  
 I'm not sure if this is the first one out there, but it is the only 2-way synchronous project I could find so that's pretty cool :)
 
