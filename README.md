@@ -5,6 +5,15 @@ WARNING: This repo will be undergoing a good bit of change to make more accessib
 
 REMINDER: No making monetary gain off of this product. The point of making this available was to make the tools accessible to everyone
 
+NEW FUNCTIONALITIES SINCE FIRST UPLOADING:
+- Able to name the required Notion columns whatever you want and have the code work
+- Able to add in end times and sync that across both platforms
+- Able to decide if a date in Notion will make an event at a desired time or if it will make an All-day event
+- Ability to change timezones a lot easier 
+- Able to decide default length of new GCal events 
+ 
+ /
+ 
 I'm not sure if this is the first one out there, but it is the only 2-way synchronous project I could find so that's pretty cool :)
 
 
