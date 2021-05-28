@@ -149,61 +149,6 @@ def makeTaskURL(ending, urlRoot):
 #METHOD TO MAKE A CALENDAR EVENT
 
 
-# def makeCalEvent(eventName, eventDescription, eventStartTime, sourceURL, eventEndTime):
- 
-#     if eventStartTime.hour == 0 and eventStartTime.minute ==  0 and eventEndTime.hour == 0 and eventEndTime.minute == 0 and eventStartTime != eventEndTime:
-#         eventEndTime = eventEndTime + timedelta(days=1) #gotta make it to 12AM the day after
-#         event = {
-#             'summary': eventName,
-#             'description': eventDescription,
-#             'start': {
-#                 'date': eventStartTime.strftime("%Y-%m-%d"),
-#                 'timeZone': timezone,
-#             },
-#             'end': {
-#                 'date': eventEndTime.strftime("%Y-%m-%d"),
-#                 'timeZone': timezone,
-#             }, 
-#             'source': {
-#                 'title': 'Notion Link',
-#                 'url': sourceURL,
-#             }
-#         }
-#         print(eventStartTime)
-#         print(eventEndTime)
-#     else:
-#         if eventStartTime.hour == 0 and eventStartTime.minute == 0 and eventEndTime == eventStartTime: #if the datetime fed into this is only a date or is at 12 AM, then the event will fall under here
-#             eventStartTime = datetime.combine(eventStartTime, datetime.min.time()) + timedelta(hours=DEFAULT_EVENT_START) ##make the events pop up at 8 am instead of 12 am
-#         else: #if you give a specific start time to the event
-#             eventStartTime = eventStartTime
-#         if eventEndTime == eventStartTime:  #We will set up that the end time will be equal to the eventStartTime if there is no endTime given on the Notion event
-#             eventEndTime = eventStartTime + timedelta(minutes= DEFAULT_EVENT_LENGTH)
-#         print(eventStartTime)
-#         print(eventEndTime)
-
-#         event = {
-#             'summary': eventName,
-#             'description': eventDescription,
-#             'start': {
-#                 'dateTime': eventStartTime.strftime("%Y-%m-%dT%H:%M:%S"),
-#                 'timeZone': timezone,
-#             },
-#             'end': {
-#                 'dateTime': eventEndTime.strftime("%Y-%m-%dT%H:%M:%S"),
-#                 'timeZone': timezone,
-#             }, 
-#             'source': {
-#                 'title': 'Notion Link',
-#                 'url': sourceURL,
-#             }
-#         }
-#     print('Adding this event to calendar: ', eventName)
-
-#     print(event)
-#     x = service.events().insert(calendarId=calendarID, body=event).execute()
-#     return x['id']
-
-
 def makeCalEvent(eventName, eventDescription, eventStartTime, sourceURL, eventEndTime):
  
     if eventStartTime.hour == 0 and eventStartTime.minute == 0 and eventEndTime == eventStartTime:
@@ -298,54 +243,7 @@ def makeCalEvent(eventName, eventDescription, eventStartTime, sourceURL, eventEn
 #METHOD TO UPDATE A CALENDAR EVENT
 
 def upDateCalEvent(eventName, eventDescription, eventStartTime, sourceURL, eventId, eventEndTime):
-    
-    # if eventStartTime.hour == 0 and eventStartTime.minute ==  0 and eventEndTime.hour == 0 and eventEndTime.minute == 0:
-    #     eventEndTime = eventEndTime + timedelta(days=1) #gotta make it to 12AM the day after
-    #     event = {
-    #         'summary': eventName,
-    #         'description': eventDescription,
-    #         'start': {
-    #             'date': eventStartTime.strftime("%Y-%m-%d"),
-    #             'timeZone': timezone,
-    #         },
-    #         'end': {
-    #             'date': eventEndTime.strftime("%Y-%m-%d"),
-    #             'timeZone': timezone,
-    #         }, 
-    #         'source': {
-    #             'title': 'Notion Link',
-    #             'url': sourceURL,
-    #         }
-    #     }
-    #     print(eventStartTime)
-    #     print(eventEndTime)
-    # else:
-    #     if eventStartTime.hour == 0 and eventStartTime.minute == 0 and eventEndTime == eventStartTime: #if the datetime fed into this is only a date or is at 12 AM, then the event will fall under here
-    #         eventStartTime = datetime.combine(eventStartTime, datetime.min.time()) + timedelta(hours=DEFAULT_EVENT_START) ##make the events pop up at 8 am instead of 12 am
-    #     else: #if you give a specific start time to the event
-    #         eventStartTime = eventStartTime
 
-    #     if eventEndTime == eventStartTime:  #We will set up that the end time will be equal to the eventStartTime if there is no endTime given on the Notion event
-    #         eventEndTime = eventStartTime + timedelta(minutes= DEFAULT_EVENT_LENGTH)
-    #     print(eventStartTime)
-    #     print(eventEndTime)
-
-    #     event = {
-    #         'summary': eventName,
-    #         'description': eventDescription,
-    #         'start': {
-    #             'dateTime': eventStartTime.strftime("%Y-%m-%dT%H:%M:%S"),
-    #             'timeZone': timezone,
-    #         },
-    #         'end': {
-    #             'dateTime': eventEndTime.strftime("%Y-%m-%dT%H:%M:%S"),
-    #             'timeZone': timezone,
-    #         }, 
-    #         'source': {
-    #             'title': 'Notion Link',
-    #             'url': sourceURL,
-    #         }
-    #     }
     if eventStartTime.hour == 0 and eventStartTime.minute == 0 and eventEndTime == eventStartTime:  #you're given a single date
         if AllDayEventOption == 1:
             eventStartTime = datetime.combine(eventStartTime, datetime.min.time()) + timedelta(hours=DEFAULT_EVENT_START) ##make the events pop up at 8 am instead of 12 am
@@ -478,7 +376,7 @@ my_page = notion.databases.query(  #this query will return a dictionary that we 
 )
 resultList = my_page['results']
 
-print(len(resultList))
+# print(len(resultList))
 
 try:
     print(resultList[0])
@@ -823,116 +721,9 @@ for i in range(len(new_notion_start_datetimes)):
     if notion_end_datetimes[i] != gCal_end_datetimes[i]: #this means that there is no end time in notion 
         new_notion_end_datetimes[i] = gCal_end_datetimes[i]
 
-print(new_notion_start_datetimes)
-print(new_notion_end_datetimes)
+# print(new_notion_start_datetimes)
+# print(new_notion_end_datetimes)
 
-
-# for i in range(len(new_notion_start_datetimes)):
-
-#     if new_notion_end_datetimes[i] == new_notion_start_datetimes[i] and new_notion_end_datetimes[i] != '': #this is for all day events
-#         print(new_notion_start_datetimes[i])
-#         my_page = notion.pages.update( #update the notion dashboard with the new datetime and update the last updated time
-#                 **{
-#                     "page_id": notion_IDs_List[i], 
-#                     "properties": {
-#                         Date_Notion_Name: {
-#                             "date":{
-#                                 'start': DateTimeIntoNotionFormat(new_notion_start_datetimes[i]),
-#                                 'end': None,
-#                             }
-#                         },
-#                         LastUpdatedTime_Notion_Name: {
-#                             "date":{
-#                                 'start': notion_time(), #has to be adjsuted for when daylight savings is different
-#                                 'end': None,
-#                             }
-#                         }
-#                     },
-#                 },
-#             )
-#     elif new_notion_end_datetimes[i] == notion_start_datetimes[i] and new_notion_end_datetimes[i] != '': #for all day events
-#         my_page = notion.pages.update( #update the notion dashboard with the new datetime and update the last updated time
-#                 **{
-#                     "page_id": notion_IDs_List[i], 
-#                     "properties": {
-#                         Date_Notion_Name: {
-#                             "date":{
-#                                 'start': DateTimeIntoNotionFormat(notion_start_datetimes[i]),
-#                                 'end': None,
-#                             }
-#                         },
-#                         LastUpdatedTime_Notion_Name: {
-#                             "date":{
-#                                 'start': notion_time(), #has to be adjsuted for when daylight savings is different
-#                                 'end': None,
-#                             }
-#                         }
-#                     },
-#                 },
-#             )
-
-#     elif new_notion_start_datetimes[i] != '' and  new_notion_end_datetimes[i] != '':
-#         my_page = notion.pages.update( #update the notion dashboard with the new datetime and update the last updated time
-#                 **{
-#                     "page_id": notion_IDs_List[i], 
-#                     "properties": {
-#                         Date_Notion_Name: {
-#                             "date":{
-#                                 'start': DateTimeIntoNotionFormat(new_notion_start_datetimes[i]),
-#                                 'end': DateTimeIntoNotionFormat(new_notion_end_datetimes[i]),
-#                             }
-#                         },
-#                         LastUpdatedTime_Notion_Name: {
-#                             "date":{
-#                                 'start': notion_time(), #has to be adjsuted for when daylight savings is different
-#                                 'end': None,
-#                             }
-#                         }
-#                     },
-#                 },
-#             )
-#     else:
-#         if new_notion_start_datetimes[i] != '':
-#             print(DateTimeIntoNotionFormat(new_notion_start_datetimes[i]), DateTimeIntoNotionFormat(notion_end_datetimes[i]))
-#             my_page = notion.pages.update( #update the notion dashboard with the new datetime and update the last updated time
-#                 **{
-#                     "page_id": notion_IDs_List[i], 
-#                     "properties": {
-#                         Date_Notion_Name: {
-#                             "date":{
-#                                 'start': DateTimeIntoNotionFormat(new_notion_start_datetimes[i]),
-#                                 'end': DateTimeIntoNotionFormat(notion_end_datetimes[i]),
-#                             }
-#                         },
-#                         LastUpdatedTime_Notion_Name: {
-#                             "date":{
-#                                 'start': notion_time(), #has to be adjsuted for when daylight savings is different
-#                                 'end': None,
-#                             }
-#                         }
-#                     },
-#                 },
-#             )
-#         if new_notion_end_datetimes[i] != '':
-#             my_page = notion.pages.update( #update the notion dashboard with the new datetime and update the last updated time
-#                 **{
-#                     "page_id": notion_IDs_List[i], 
-#                     "properties": {
-#                         Date_Notion_Name: {
-#                             "date":{
-#                                 'start': DateTimeIntoNotionFormat(notion_start_datetimes[i]),
-#                                 'end': DateTimeIntoNotionFormat(new_notion_end_datetimes[i]),
-#                             }
-#                         },
-#                         LastUpdatedTime_Notion_Name: {
-#                             "date":{
-#                                 'start': notion_time(), #has to be adjsuted for when daylight savings is different
-#                                 'end': None,
-#                             }
-#                         }
-#                     },
-#                 },
-#             )
 
 for i in range(len(new_notion_start_datetimes)):
     if new_notion_start_datetimes[i]  != '' and new_notion_end_datetimes[i] != '': #both start and end time need to be updated
@@ -1160,13 +951,7 @@ for result in resultList:
 events = service.events().list(calendarId = calendarID, maxResults = 2000, timeMin = googleQuery() ).execute()
 
 calItems = events['items']
-for item in calItems:
-    try:
-        x = item['recurrence']
-        print(item) 
-        print('\n')
-    except:
-        print('\n')
+
 calName = [item['summary'] for item in calItems]
 # calStartDates = [item['start']['dateTime'] for item in calItems]
 
