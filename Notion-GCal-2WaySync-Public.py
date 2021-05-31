@@ -151,7 +151,7 @@ def makeTaskURL(ending, urlRoot):
 
 def makeCalEvent(eventName, eventDescription, eventStartTime, sourceURL, eventEndTime):
  
-    if eventStartTime.hour == 0 and eventStartTime.minute == 0 and eventEndTime == eventStartTime:
+    if eventStartTime.hour == 0 and eventStartTime.minute == 0 and eventEndTime == eventStartTime: #only startTime is given from the Notion Dashboard
         if AllDayEventOption == 1:
             eventStartTime = datetime.combine(eventStartTime, datetime.min.time()) + timedelta(hours=DEFAULT_EVENT_START) ##make the events pop up at 8 am instead of 12 am
             eventEndTime = eventStartTime + timedelta(minutes= DEFAULT_EVENT_LENGTH)
@@ -210,12 +210,20 @@ def makeCalEvent(eventName, eventDescription, eventStartTime, sourceURL, eventEn
             }
         }
     
-    else: #just 2 datetimes passed in 
-        if eventStartTime.hour == 0 and eventStartTime.minute == 0: #if the datetime fed into this is only a date or is at 12 AM, then the event will fall under here
-            eventStartTime = datetime.combine(eventStartTime, datetime.min.time()) + timedelta(hours=8) ##make the events pop up at 8 am instead of 12 am
+    else: #just 2 datetimes passed in from the method call that are not at 12 AM
+        if eventStartTime.hour == 0 and eventStartTime.minute == 0 and eventEndTime != eventStartTime: #Start on Notion is 12 am and end is also given on Notion 
+            eventStartTime = eventStartTime #start will be 12 am
+            eventEndTime = eventEndTime #end will be whenever specified
+        elif eventStartTime.hour == 0 and eventStartTime.minute == 0: #if the datetime fed into this is only a date or is at 12 AM, then the event will fall under here
+            eventStartTime = datetime.combine(eventStartTime, datetime.min.time()) + timedelta(hours=DEFAULT_EVENT_START) ##make the events pop up at 8 am instead of 12 am
+            eventEndTime = eventStartTime + timedelta(minutes= DEFAULT_EVENT_LENGTH)  
+        elif eventEndTime == eventStartTime: #this would meant that only 1 datetime was actually on the notion dashboard 
+            eventStartTime = eventStartTime
+            eventEndTime = eventStartTime + timedelta(minutes= DEFAULT_EVENT_LENGTH) 
         else: #if you give a specific start time to the event
             eventStartTime = eventStartTime
-        eventEndTime = eventStartTime + timedelta(minutes= DEFAULT_EVENT_LENGTH) 
+            eventEndTime = eventEndTime
+        
         event = {
             'summary': eventName,
             'description': eventDescription,
@@ -304,11 +312,18 @@ def upDateCalEvent(eventName, eventDescription, eventStartTime, sourceURL, event
         }
     
     else: #just 2 datetimes passed in 
-        if eventStartTime.hour == 0 and eventStartTime.minute == 0: #if the datetime fed into this is only a date or is at 12 AM, then the event will fall under here
-            eventStartTime = datetime.combine(eventStartTime, datetime.min.time()) + timedelta(hours=8) ##make the events pop up at 8 am instead of 12 am
+        if eventStartTime.hour == 0 and eventStartTime.minute == 0 and eventEndTime != eventStartTime: #Start on Notion is 12 am and end is also given on Notion 
+            eventStartTime = eventStartTime #start will be 12 am
+            eventEndTime = eventEndTime #end will be whenever specified
+        elif eventStartTime.hour == 0 and eventStartTime.minute == 0: #if the datetime fed into this is only a date or is at 12 AM, then the event will fall under here
+            eventStartTime = datetime.combine(eventStartTime, datetime.min.time()) + timedelta(hours=DEFAULT_EVENT_START) ##make the events pop up at 8 am instead of 12 am
+            eventEndTime = eventStartTime + timedelta(minutes= DEFAULT_EVENT_LENGTH)  
+        elif eventEndTime == eventStartTime: #this would meant that only 1 datetime was actually on the notion dashboard 
+            eventStartTime = eventStartTime
+            eventEndTime = eventStartTime + timedelta(minutes= DEFAULT_EVENT_LENGTH) 
         else: #if you give a specific start time to the event
             eventStartTime = eventStartTime
-        eventEndTime = eventStartTime + timedelta(minutes= DEFAULT_EVENT_LENGTH) 
+            eventEndTime = eventEndTime 
         event = {
             'summary': eventName,
             'description': eventDescription,
