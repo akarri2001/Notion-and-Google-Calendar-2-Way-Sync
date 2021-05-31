@@ -7,7 +7,7 @@ REMINDER: No making monetary gain off of this product. The point of making this 
 
 NEW FUNCTIONALITIES SINCE FIRST UPLOADING:
 - Able to name the required Notion columns whatever you want and have the code work
-- ~~Able to add in end times and sync that across both platforms~~ (this is curently broken but a fix  will be out soon)
+- Able to add in end times and sync that across both platforms
 - Able to decide if a date in Notion will make an event at a desired time or if it will make an All-day event
 - Ability to change timezones a lot easier 
 - Able to decide default length of new GCal events 
