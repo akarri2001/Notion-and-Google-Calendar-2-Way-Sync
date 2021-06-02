@@ -5,6 +5,14 @@ WARNING: This repo will be undergoing a good bit of change to make more accessib
 
 REMINDER: No making monetary gain off of this product. The point of making this available was to make the tools accessible to everyone
 
+NEW FUNCTIONALITIES SINCE FIRST UPLOADING:
+- Able to name the required Notion columns whatever you want and have the code work
+- Able to add in end times and sync that across both platforms
+- Able to decide if a date in Notion will make an event at a desired time or if it will make an All-day event
+- Ability to change timezones a lot easier 
+- Able to decide default length of new GCal events 
+ 
+ 
 I'm not sure if this is the first one out there, but it is the only 2-way synchronous project I could find so that's pretty cool :)
 
 
@@ -15,7 +23,7 @@ Use this Notion Template as reference: https://www.notion.so/akarri/47c097712009
 The functionalities:
 
 - Take existing events from your Notion Dashboard and bring them over to Google Calendar
-- If the Notion event has only a date, then the GCal event is made at 8 am 
+- If the Notion event has only a date, then the GCal event is made at 8 am (option to turn this off and have the event be all day instead)
 - If the Notion even has a date and time, then the GCal event is made at the appropriate time
 - If the event is already in both GCal and Notion, but you switch the date/time on either, it will sync with the new value across both platforms (if both are changed, the value on Notion will overrule).
 - If the event is only in GCal, it will be brought over to Notion, as well as the description of the event that you add from GCal 
@@ -26,11 +34,11 @@ When making events, the code will extract the event name, date/time, a category,
 \
 \
 Future Updates (dates subject to change)
-- ~~Able to name the required Notion columns whatever you want and have the code work (By June 5th)~~ ✅
-- Able to add in end times and sync that across both platforms (by June 15th) 
-- Able to factor in recurring events (by end of June)
+- ~~Able to name the required Notion columns whatever you want and have the code work (By June 5th)~~ ✅ (Done)
+- ~~Able to add in end times and sync that across both platforms (by June 15th)~~ ✅ (Done)
 - Video on how to install/use the tool for thoses who never coded (end of June/beginning of July)
 - Able to add different events to different calendars depending on a Notion column (up in the air)
+- Able to factor in recurring events (up in the air) (the way GCal API handles recurring events really funky, so help would be appreciated!)
 
 Some more visibility through some upvotes on my Reddit post would be appreciated and I think may bring along some new users to this resource! [Reddit Post](https://www.reddit.com/r/Notion/comments/nlj77o/its_finally_here_unlimited_2way_sync_with_google/)
 
