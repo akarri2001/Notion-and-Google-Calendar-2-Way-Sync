@@ -5,20 +5,22 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 import pickle
 
+
 ###########################################################################
 ##### The Set-Up Section. Please follow the comments to understand the code. 
 ###########################################################################
 
+
 NOTION_TOKEN = "" #the secret_something from Notion Integration
 
-database_id = "" #get the mess of numbers before the "?" on your dashboard URL
+database_id = "" #get the mess of numbers before the "?" on your dashboard URL (no need to split into dashes)
 
-urlRoot = 'https://www.notion.so/akarri/47c0977120094511b0ab6cbf68b20c57?v=21c35762ede544818692acb1e8deefed&p=' #open up a task and then copy the URL root up to the "p="
+urlRoot = 'https://www.notion.so/akarri/2583098dfd32472ab6ca1ff2a8b2866d?v=3a1adf60f15748f08ed925a2eca88421&p=' #open up a task and then copy the URL root up to the "p="
 
 runScript = "python3 GCalToken.py" #This is the command you will be feeding into the command prompt to run the GCalToken program
 
 #GCal Set Up Part
-calendarID = '' #The GCal calendar id. The format is something like "sldkjfliksedjgodsfhgshglsj@group.calendar.google.com"
+
 credentialsLocation = "token.pkl" #This is where you keep the pickle file that has the Google Calendar Credentials
 
 
@@ -26,7 +28,6 @@ DEFAULT_EVENT_LENGTH = 60 #This is how many minutes the default event length is.
 timezone = 'America/New_York' #Choose your respective time zone: http://www.timezoneconverter.com/cgi-bin/zonehelp.tzc
 
 def notion_time():
-    print(datetime.now().strftime("%Y-%m-%dT%H:%M:%S-04:00"))
     return datetime.now().strftime("%Y-%m-%dT%H:%M:%S-04:00") #Change the last 5 characters to be representative of your timezone
      #^^ has to be adjusted for when daylight savings is different if your area observes it
     
@@ -47,6 +48,23 @@ AllDayEventOption = 0 #0 if you want dates on your Notion dashboard to be treate
 
 
 
+### MULTIPLE CALENDAR PART:
+#  - VERY IMPORTANT: For each 'key' of the dictionary, make sure that you make that EXACT thing in the Notion database first before running the code. You WILL have an error and your dashboard/calendar will be messed up
+
+
+DEFAULT_CALENDAR_ID = '565bdjsqmautc214vcimtn5kso@group.calendar.google.com' #The GCal calendar id. The format is something like "sldkjfliksedjgodsfhgshglsj@group.calendar.google.com"
+
+DEFAULT_CALENDAR_NAME = 'Test'
+
+
+#leave the first entry as is
+#the structure should be as follows:              WHAT_THE_OPTION_IN_NOTION_IS_CALLED : GCAL_CALENDAR_ID 
+calendarDictionary = {
+    DEFAULT_CALENDAR_NAME : DEFAULT_CALENDAR_ID, 
+    'Test' : 'fd34893uklhjdflgkjsdafdfjklsd@group.calendar.google.com', #just typed some random ids but put the one for your calendars here
+    'New Test' : 'skdhvjhefoierjkh345378khkh@group.calendar.google.com'
+}
+
 
 
 ##### DATABASE SPECIFIC EDITS
@@ -54,7 +72,7 @@ AllDayEventOption = 0 #0 if you want dates on your Notion dashboard to be treate
 # There needs to be a few properties on the Notion Database for this to work. Replace the values of each variable with the string of what the variable is called on your Notion dashboard
 # The Last Edited Time column is a property of the notion pages themselves, you just have to make it a column
 # The NeedGCalUpdate column is a formula column that works as such "if(prop("Last Edited Time") > prop("Last Updated Time"), true, false)"
-#Please refer to the Template if you are confused: https://www.notion.so/akarri/47c0977120094511b0ab6cbf68b20c57?v=21c35762ede544818692acb1e8deefed
+#Please refer to the Template if you are confused: https://www.notion.so/akarri/2583098dfd32472ab6ca1ff2a8b2866d?v=3a1adf60f15748f08ed925a2eca88421
 
 
 Task_Notion_Name = 'Task' 
@@ -65,7 +83,8 @@ On_GCal_Notion_Name = 'On GCal?'
 NeedGCalUpdate_Notion_Name = 'NeedGCalUpdate'
 GCalEventId_Notion_Name = 'GCal Event Id'
 LastUpdatedTime_Notion_Name  = 'Last Updated Time'
-
+Calendar_Notion_Name = 'Calendar'
+Current_Calendar_Id_Notion_Name = 'Current Calendar Id'
 
 #######################################################################################
 ###               No additional user editing beyond this point is needed            ###
@@ -88,7 +107,7 @@ try:
 except:
     #refresh the token
     import os
-    os.system(runScript)    
+    os.system(GCalTokenLocation)    
     
     #SET UP THE GOOGLE CALENDAR API INTERFACE
 
