@@ -1,0 +1,8 @@
+# environments
+.env
+venv/
+.vscode/
+
+# other credentials
+client_secret.json
+token.pkl

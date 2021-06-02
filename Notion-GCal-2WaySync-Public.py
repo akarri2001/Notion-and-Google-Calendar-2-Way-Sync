@@ -5,24 +5,21 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 import pickle
 
-
 ###########################################################################
 ##### The Set-Up Section. Please follow the comments to understand the code. 
 ###########################################################################
 
-
 NOTION_TOKEN = "" #the secret_something from Notion Integration
-database_id = "" #get the mess of numbers before the "?" on your dashboard URL and then split it into 8-4-4-4-12 characters between each dash
 
-#^^ This is for America/New York when it's daylight savings
+database_id = "" #get the mess of numbers before the "?" on your dashboard URL
 
 urlRoot = 'https://www.notion.so/akarri/47c0977120094511b0ab6cbf68b20c57?v=21c35762ede544818692acb1e8deefed&p=' #open up a task and then copy the URL root up to the "p="
 
-GCalTokenScriptAndLocation = "python THE_PATH_TO_THE_GCALTOKEN.PY_SCRIPT" #This is the command you will be feeding into the command prompt to run the GCalToken program
+runScript = "python3 GCalToken.py" #This is the command you will be feeding into the command prompt to run the GCalToken program
 
 #GCal Set Up Part
-calendarID = '' #The GCal calendar id. The format is something like "sldkjfliksedjgodsfhgshglsj@groups.calendar.google.com"
-credentialsLocation = "" #This is where you keep the pickle file that has the Google Calendar Credentials
+calendarID = '' #The GCal calendar id. The format is something like "sldkjfliksedjgodsfhgshglsj@group.calendar.google.com"
+credentialsLocation = "token.pkl" #This is where you keep the pickle file that has the Google Calendar Credentials
 
 
 DEFAULT_EVENT_LENGTH = 60 #This is how many minutes the default event length is. Feel free to change it as you please
@@ -91,7 +88,7 @@ try:
 except:
     #refresh the token
     import os
-    os.system(GCalTokenLocation)    
+    os.system(runScript)    
     
     #SET UP THE GOOGLE CALENDAR API INTERFACE
 
