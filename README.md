@@ -17,7 +17,10 @@ I'm not sure if this is the first one out there, but it is the only 2-way synchr
 
 
 The Notion-GCal-2WaySync-Public.py code is HEAVILY commented to describe each part of the code. Follow along and you'll be able to get a quick understanding of what logic is used for each step of the script. 
-Use this Notion Template as reference: https://www.notion.so/akarri/47c0977120094511b0ab6cbf68b20c57?v=21c35762ede544818692acb1e8deefed
+Use this Notion Template as reference: 
+https://www.notion.so/akarri/2583098dfd32472ab6ca1ff2a8b2866d?v=3a1adf60f15748f08ed925a2eca88421 (multiple calendar)
+
+https://www.notion.so/akarri/47c0977120094511b0ab6cbf68b20c57?v=21c35762ede544818692acb1e8deefed (single calendar code (outdated))
 
 
 The functionalities:
