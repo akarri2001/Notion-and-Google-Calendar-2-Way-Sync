@@ -103,11 +103,11 @@ service = build("calendar", "v3", credentials=credentials)
 #If the token expires, the other python script GCalToken.py creates a new token for the program to use
 #This is placed here because it can take a few seconds to start working and I want the most heavy tasks to occur first
 try:
-    calendar = service.calendars().get(calendarId=calendarID).execute()
+    calendar = service.calendars().get(calendarId=DEFAULT_CALENDAR_ID).execute()
 except:
     #refresh the token
     import os
-    os.system(GCalTokenLocation)    
+    os.system(GCalTokenScriptAndLocation)    
     
     #SET UP THE GOOGLE CALENDAR API INTERFACE
 
@@ -165,7 +165,7 @@ def makeTaskURL(ending, urlRoot):
 #METHOD TO MAKE A CALENDAR EVENT
 
 
-def makeCalEvent(eventName, eventDescription, eventStartTime, sourceURL, eventEndTime):
+def makeCalEvent(eventName, eventDescription, eventStartTime, sourceURL, eventEndTime, calId):
  
     if eventStartTime.hour == 0 and eventStartTime.minute == 0 and eventEndTime == eventStartTime: #only startTime is given from the Notion Dashboard
         if AllDayEventOption == 1:
@@ -259,14 +259,14 @@ def makeCalEvent(eventName, eventDescription, eventStartTime, sourceURL, eventEn
     print('Adding this event to calendar: ', eventName)
 
     print(event)
-    x = service.events().insert(calendarId=calendarID, body=event).execute()
+    x = service.events().insert(calendarId=calId, body=event).execute()
     return x['id']
 
 
 ######################################################################
 #METHOD TO UPDATE A CALENDAR EVENT
 
-def upDateCalEvent(eventName, eventDescription, eventStartTime, sourceURL, eventId, eventEndTime):
+def upDateCalEvent(eventName, eventDescription, eventStartTime, sourceURL, eventId, eventEndTime, currentCalId, CalId):
 
     if eventStartTime.hour == 0 and eventStartTime.minute == 0 and eventEndTime == eventStartTime:  #you're given a single date
         if AllDayEventOption == 1:
@@ -357,7 +357,18 @@ def upDateCalEvent(eventName, eventDescription, eventStartTime, sourceURL, event
             }
         }    
     print('Updating this event to calendar: ', eventName)
-    x = service.events().update(calendarId=calendarID, eventId = eventId, body=event).execute()
+
+    if currentCalId == CalId:
+        x = service.events().update(calendarId=CalId, eventId = eventId, body=event).execute()
+
+    else: #When we have to move the event to a new calendar. We must move the event over to the new calendar and then update the information on the event
+        print('Event ' + eventId)
+        print('CurrentCal ' + currentCalId)
+        print('NewCal ' + CalId)
+        x= service.events().move(calendarId= currentCalId , eventId= eventId, destination=CalId).execute()
+        print('New event id: ' + x['id'])
+        x = service.events().update(calendarId=CalId, eventId = eventId, body=event).execute()
+
     return x['id']
 
 
@@ -421,7 +432,7 @@ Initiatives = []
 ExtraInfo = []
 URL_list = []
 calEventIdList = []
-
+CalendarList = []
 
 if len(resultList) > 0:
 
@@ -448,6 +459,11 @@ if len(resultList) > 0:
         except:
             ExtraInfo.append("")
         URL_list.append(makeTaskURL(el['id'], urlRoot))
+        
+        try:
+            CalendarList.append(calendarDictionary[el['properties'][Calendar_Notion_Name]['select']['name']])
+        except: #keyerror occurs when there's nothing put into the calendar in the first place
+            CalendarList.append(calendarDictionary[DEFAULT_CALENDAR_NAME])
 
         pageId = el['id']
         my_page = notion.pages.update( ##### This checks off that the event has been put on Google Calendar
@@ -462,41 +478,77 @@ if len(resultList) > 0:
                             'start': notion_time(),
                             'end': None,
                         }
-                    }
+                    }, 
                 },
             },
         )  
+        print(CalendarList)
         
 
         # 2 Cases: Start and End are  both either date or date+time #Have restriction that the calendar events don't cross days
         try:
             #start and end are both dates
-            calEventId = makeCalEvent(TaskNames[i], makeEventDescription(Initiatives[i], ExtraInfo[i]), datetime.strptime(start_Dates[i], '%Y-%m-%d'), URL_list[i], datetime.strptime(end_Times[i], '%Y-%m-%d') )
+            calEventId = makeCalEvent(TaskNames[i], makeEventDescription(Initiatives[i], ExtraInfo[i]), datetime.strptime(start_Dates[i], '%Y-%m-%d'), URL_list[i], datetime.strptime(end_Times[i], '%Y-%m-%d'), CalendarList[i] )
         except:
             try:
                 #start and end are both date+time
-                calEventId = makeCalEvent(TaskNames[i], makeEventDescription(Initiatives[i], ExtraInfo[i]), datetime.strptime(start_Dates[i][:-6], "%Y-%m-%dT%H:%M:%S.000"), URL_list[i],  datetime.strptime(end_Times[i][:-6], "%Y-%m-%dT%H:%M:%S.000"))
+                calEventId = makeCalEvent(TaskNames[i], makeEventDescription(Initiatives[i], ExtraInfo[i]), datetime.strptime(start_Dates[i][:-6], "%Y-%m-%dT%H:%M:%S.000"), URL_list[i],  datetime.strptime(end_Times[i][:-6], "%Y-%m-%dT%H:%M:%S.000"), CalendarList[i])
             except:
-                calEventId = makeCalEvent(TaskNames[i], makeEventDescription(Initiatives[i], ExtraInfo[i]), datetime.strptime(start_Dates[i][:-6], "%Y-%m-%dT%H:%M:%S.%f"), URL_list[i],  datetime.strptime(end_Times[i][:-6], "%Y-%m-%dT%H:%M:%S.%f"))
+                calEventId = makeCalEvent(TaskNames[i], makeEventDescription(Initiatives[i], ExtraInfo[i]), datetime.strptime(start_Dates[i][:-6], "%Y-%m-%dT%H:%M:%S.%f"), URL_list[i],  datetime.strptime(end_Times[i][:-6], "%Y-%m-%dT%H:%M:%S.%f"), CalendarList[i])
 
 
         
         calEventIdList.append(calEventId)
 
-        my_page = notion.pages.update( ##### This puts the the GCal Id into the Notion Dashboard
-            **{
-                "page_id": pageId, 
-                "properties": {
-                    GCalEventId_Notion_Name: {
-                        "rich_text": [{
-                            'text': {
-                                'content': calEventIdList[i]
-                            }
-                        }]
-                    }
+        if CalendarList[i] == calendarDictionary[DEFAULT_CALENDAR_NAME]: #this means that there is no calendar assigned on Notion
+            my_page = notion.pages.update( ##### This puts the the GCal Id into the Notion Dashboard
+                **{
+                    "page_id": pageId, 
+                    "properties": {
+                        GCalEventId_Notion_Name: {
+                            "rich_text": [{
+                                'text': {
+                                    'content': calEventIdList[i]
+                                }
+                            }]
+                        },
+                        Current_Calendar_Id_Notion_Name: {
+                            "rich_text": [{
+                                'text': {
+                                    'content': CalendarList[i]
+                                }
+                            }]
+                        },
+                        Calendar_Notion_Name:  { 
+                            'select': {
+                                "name": DEFAULT_CALENDAR_NAME
+                            },
+                        },
+                    },
                 },
-            },
-        )
+            )
+        else: #just a regular update
+            my_page = notion.pages.update(
+                **{
+                    "page_id": pageId, 
+                    "properties": {
+                        GCalEventId_Notion_Name: {
+                            "rich_text": [{
+                                'text': {
+                                    'content': calEventIdList[i]
+                                }
+                            }]
+                        },
+                        Current_Calendar_Id_Notion_Name: {
+                            "rich_text": [{
+                                'text': {
+                                    'content': CalendarList[i]
+                                }
+                            }]
+                        }
+                    },
+                },
+            )
 
 
 
@@ -509,6 +561,65 @@ else:
 ##### Part 2: Updating GCal Events that Need To Be Updated (Changed on Notion but need to be changed on GCal)
 ###########################################################################
 
+
+#Just gotta put a fail-safe in here in case people deleted the Calendar Variable
+#this queries items in the next week where the Calendar select thing is empty
+my_page = notion.databases.query(  
+    **{
+        "database_id": database_id, 
+        "filter": {
+            "and": [
+                {
+                    "property": Calendar_Notion_Name, 
+                    "select":  {
+                        "is_empty": True
+                    }
+                }, 
+                {
+                    "or": [
+                    {
+                        "property": Date_Notion_Name, 
+                        "date": {
+                            "equals": todayDate
+                        }
+                    }, 
+                    {
+                        "property": Date_Notion_Name, 
+                        "date": {
+                            "next_week": {}
+                        }
+                    }
+                ]   
+                }
+            ]
+        },
+    }
+)
+resultList = my_page['results']
+
+if len(resultList) > 0:
+    for i, el in enumerate(resultList):
+        pageId = el['id']
+        my_page = notion.pages.update( ##### This checks off that the event has been put on Google Calendar
+            **{
+                "page_id": pageId, 
+                "properties": {
+                    Calendar_Notion_Name:  { 
+                        'select': {
+                            "name": DEFAULT_CALENDAR_NAME
+                        },
+                    },
+                    LastUpdatedTime_Notion_Name: {
+                        "date":{
+                            'start': notion_time(),
+                            'end': None,
+                        }
+                    }, 
+                },
+            },
+        )  
+
+
 ## Filter events that have been updated since the GCal event has been made
 
 #this query will return a dictionary that we will parse for information that we want
@@ -520,6 +631,12 @@ my_page = notion.databases.query(
             "and": [
                 {
                     "property": NeedGCalUpdate_Notion_Name, 
+                    "checkbox":  {
+                        "equals": True
+                    }
+                }, 
+                {
+                    "property": On_GCal_Notion_Name, 
                     "checkbox":  {
                         "equals": True
                     }
@@ -551,12 +668,17 @@ updatingNotionPageIds = []
 updatingCalEventIds = []
 
 for result in resultList:
+    print(result)
+    print('\n')
     pageId = result['id']
     updatingNotionPageIds.append(pageId)
     print('\n')
     print(result)
     print('\n')
-    calId = result['properties'][GCalEventId_Notion_Name]['rich_text'][0]['text']['content']
+    try:
+        calId = result['properties'][GCalEventId_Notion_Name]['rich_text'][0]['text']['content']
+    except:
+        calId = DEFAULT_CALENDAR_ID
     print(calId)
     updatingCalEventIds.append(calId)
 
@@ -566,7 +688,8 @@ end_Times = []
 Initiatives = []
 ExtraInfo = []
 URL_list = []
-
+CalendarList = []
+CurrentCalList = []
 
 if len(resultList) > 0:
 
@@ -595,17 +718,26 @@ if len(resultList) > 0:
             ExtraInfo.append("")
         URL_list.append(makeTaskURL(el['id'], urlRoot))
 
+        print(el)
+        # CalendarList.append(calendarDictionary[el['properties'][Calendar_Notion_Name]['select']['name']])
+        try:
+            CalendarList.append(calendarDictionary[el['properties'][Calendar_Notion_Name]['select']['name']])
+        except: #keyerror occurs when there's nothing put into the calendar in the first place
+            CalendarList.append(calendarDictionary[DEFAULT_CALENDAR_NAME])
+
+        CurrentCalList.append(el['properties'][Current_Calendar_Id_Notion_Name]['rich_text'][0]['text']['content'])
+
         pageId = el['id']
 
 
         ##depending on the format of the dates, we'll update the gCal event as necessary
         try:
-            calEventId = upDateCalEvent(TaskNames[i], makeEventDescription(Initiatives[i], ExtraInfo[i]), datetime.strptime(start_Dates[i], '%Y-%m-%d'), URL_list[i], updatingCalEventIds[i], datetime.strptime(end_Times[i], '%Y-%m-%d') )
+            calEventId = upDateCalEvent(TaskNames[i], makeEventDescription(Initiatives[i], ExtraInfo[i]), datetime.strptime(start_Dates[i], '%Y-%m-%d'), URL_list[i], updatingCalEventIds[i], datetime.strptime(end_Times[i], '%Y-%m-%d'), CurrentCalList[i], CalendarList[i])
         except:
             try:
-                calEventId = upDateCalEvent(TaskNames[i], makeEventDescription(Initiatives[i], ExtraInfo[i]), datetime.strptime(start_Dates[i][:-6], "%Y-%m-%dT%H:%M:%S.000"), URL_list[i], updatingCalEventIds[i],  datetime.strptime(end_Times[i][:-6], "%Y-%m-%dT%H:%M:%S.000"))
+                calEventId = upDateCalEvent(TaskNames[i], makeEventDescription(Initiatives[i], ExtraInfo[i]), datetime.strptime(start_Dates[i][:-6], "%Y-%m-%dT%H:%M:%S.000"), URL_list[i], updatingCalEventIds[i],  datetime.strptime(end_Times[i][:-6], "%Y-%m-%dT%H:%M:%S.000"), CurrentCalList[i], CalendarList[i])
             except:
-                calEventId = upDateCalEvent(TaskNames[i], makeEventDescription(Initiatives[i], ExtraInfo[i]), datetime.strptime(start_Dates[i][:-6], "%Y-%m-%dT%H:%M:%S.%f"), URL_list[i], updatingCalEventIds[i],  datetime.strptime(end_Times[i][:-6], "%Y-%m-%dT%H:%M:%S.%f"))
+                calEventId = upDateCalEvent(TaskNames[i], makeEventDescription(Initiatives[i], ExtraInfo[i]), datetime.strptime(start_Dates[i][:-6], "%Y-%m-%dT%H:%M:%S.%f"), URL_list[i], updatingCalEventIds[i],  datetime.strptime(end_Times[i][:-6], "%Y-%m-%dT%H:%M:%S.%f"), CurrentCalList[i], CalendarList[i])
         
         
 
@@ -618,7 +750,14 @@ if len(resultList) > 0:
                             'start': notion_time(), #has to be adjusted for when daylight savings is different
                             'end': None,
                         }
-                    }
+                    },
+                    Current_Calendar_Id_Notion_Name: {
+                        "rich_text": [{
+                            'text': {
+                                'content': CalendarList[i]
+                            }
+                        }]
+                    },
                 },
             },
         )
@@ -629,7 +768,8 @@ else:
     print("Nothing new updated to GCal")
 
 
-  
+
+todayDate = datetime.today().strftime("%Y-%m-%d")
 
 ###########################################################################
 ##### Part 3: Sync GCal event updates for events already in Notion back to Notion!
@@ -690,11 +830,22 @@ notion_gCal_IDs = [] #we will be comparing this against the gCal_datetimes
 gCal_start_datetimes = []
 gCal_end_datetimes = []
 
+notion_gCal_CalIds = [] #going to fill this in from the select option, not the text option. 
+notion_gCal_CalNames = []
+gCal_CalIds = []
+
 for result in resultList:
     notion_IDs_List.append(result['id']) 
     notion_start_datetimes.append(result['properties'][Date_Notion_Name]['date']['start'])
     notion_end_datetimes.append(result['properties'][Date_Notion_Name]['date']['end'])
     notion_gCal_IDs.append(result['properties'][GCalEventId_Notion_Name]['rich_text'][0]['text']['content'])
+    try:
+        notion_gCal_CalIds.append(calendarDictionary[result['properties'][Calendar_Notion_Name]['select']['name']])
+        notion_gCal_CalNames.append(result['properties'][Calendar_Notion_Name]['select']['name'])
+    except: #keyerror occurs when there's nothing put into the calendar in the first place
+        notion_gCal_CalIds.append(calendarDictionary[DEFAULT_CALENDAR_NAME])
+        notion_gCal_CalNames.append(result['properties'][Calendar_Notion_Name]['select']['name'])
+
 
 
 #the reason we take off the last 6 characters is so we can focus in on just the date and time instead of any extra info
@@ -721,8 +872,25 @@ for  i in range(len(notion_end_datetimes)):
 
 
 ##We use the gCalId from the Notion dashboard to get retrieve the start Time from the gCal event
-for gCalId in notion_gCal_IDs:
-    value = service.events().get(calendarId=calendarID, eventId = gCalId).execute()
+value =''
+exitVar = ''
+for gCalId in notion_gCal_IDs:  
+
+    for calendarID in calendarDictionary.keys(): #just check all of the calendars of interest for info about the event
+        print('Trying ' + calendarID + ' for ' + gCalId)
+        try:
+            x = service.events().get(calendarId=calendarDictionary[calendarID], eventId = gCalId).execute()
+        except:
+            print('Event not found')
+            x = {'status': 'unconfirmed'}
+        if x['status'] == 'confirmed':
+            gCal_CalIds.append(calendarID)
+            value = x
+        else:
+            continue
+            
+    print(value)
+    print('\n') 
     try:
         gCal_start_datetimes.append(datetime.strptime(value['start']['dateTime'][:-6], "%Y-%m-%dT%H:%M:%S"))
     except:
@@ -752,8 +920,12 @@ for i in range(len(new_notion_start_datetimes)):
     if notion_end_datetimes[i] != gCal_end_datetimes[i]: #this means that there is no end time in notion 
         new_notion_end_datetimes[i] = gCal_end_datetimes[i]
 
-# print(new_notion_start_datetimes)
-# print(new_notion_end_datetimes)
+print('test')
+print(new_notion_start_datetimes)
+print(new_notion_end_datetimes)
+print('\n')
+for i in range(len(notion_gCal_IDs)):
+    print(notion_start_datetimes[i], gCal_start_datetimes[i], notion_gCal_IDs[i])
 
 
 for i in range(len(new_notion_start_datetimes)):
@@ -952,6 +1124,44 @@ for i in range(len(new_notion_start_datetimes)):
     else: #nothing needs to be updated here
         continue 
 
+print(notion_IDs_List)
+print('\n')
+print(gCal_CalIds)
+
+CalNames = list(calendarDictionary.keys())
+CalIds = list(calendarDictionary.values())
+
+
+for i, gCalId in enumerate(gCal_CalIds): #instead of checking, just update the notion datebase with whatever calendar the event is on
+    print('GcalId: ' + gCalId)
+    my_page = notion.pages.update( ##### This puts the the GCal Id into the Notion Dashboard
+        **{
+            "page_id": notion_IDs_List[i], 
+            "properties": {
+                Current_Calendar_Id_Notion_Name: { #this is the text
+                    "rich_text": [{
+                        'text': {
+                            'content': CalIds[CalNames.index(gCalId)]
+                        }
+                    }]
+                },
+                Calendar_Notion_Name:  { #this is the select
+                    'select': {
+                        "name": gCalId 
+                    },
+                },
+                LastUpdatedTime_Notion_Name: {
+                    "date":{
+                        'start': notion_time(), #has to be adjsuted for when daylight savings is different
+                        'end': None,
+                    }
+                }
+            },
+        },
+    )
+    
+
+
 ###########################################################################
 ##### Part 4: Bring events (not in Notion already) from GCal to Notion
 ###########################################################################
@@ -979,14 +1189,24 @@ for result in resultList:
 
 
 ##Get the GCal Ids and other Event Info from Google Calendar 
-events = service.events().list(calendarId = calendarID, maxResults = 2000, timeMin = googleQuery() ).execute()
 
-calItems = events['items']
+events = []
+for el in calendarDictionary.keys(): #get all the events from all calendars of interest
+    x = service.events().list(calendarId = calendarDictionary[el], maxResults = 2000, timeMin = googleQuery() ).execute()    
+    events.extend(x['items'])
+    
+print(events)
+
+# calItems = events['items']
+calItems = events
 
 calName = [item['summary'] for item in calItems]
-# calStartDates = [item['start']['dateTime'] for item in calItems]
 
-# calDates = [datetime.strptime(x[:-6], "%Y-%m-%dT%H:%M:%S") for x in calDates]
+gCal_calendarId = [item['organizer']['email'] for item in calItems] #this is to get all of the calendarIds for each event
+
+CalNames = list(calendarDictionary.keys())
+CalIds = list(calendarDictionary.values())
+gCal_calendarName = [ CalNames[CalIds.index(x)] for x in gCal_calendarId]
 
 calStartDates = []
 calEndDates = []
@@ -1076,6 +1296,18 @@ for i in range(len(calIds)):
                         On_GCal_Notion_Name: {
                             "type": "checkbox", 
                             "checkbox": True
+                        },
+                        Current_Calendar_Id_Notion_Name: {
+                            "rich_text": [{
+                                'text': {
+                                    'content': gCal_calendarId[i]
+                                }
+                            }]
+                        },
+                        Calendar_Notion_Name:  { 
+                            'select': {
+                                "name": gCal_calendarName[i]
+                            },
                         }
                     },
                 },
@@ -1135,6 +1367,18 @@ for i in range(len(calIds)):
                         On_GCal_Notion_Name: {
                             "type": "checkbox", 
                             "checkbox": True
+                        },
+                        Current_Calendar_Id_Notion_Name: {
+                            "rich_text": [{
+                                'text': {
+                                    'content': gCal_calendarId[i]
+                                }
+                            }]
+                        },
+                        Calendar_Notion_Name:  { 
+                            'select': {
+                                "name": gCal_calendarName[i]
+                            },
                         }
                     },
                 },
@@ -1192,16 +1436,21 @@ for i in range(len(calIds)):
                         On_GCal_Notion_Name: {
                             "type": "checkbox", 
                             "checkbox": True
+                        },
+                        Current_Calendar_Id_Notion_Name: {
+                            "rich_text": [{
+                                'text': {
+                                    'content': gCal_calendarId[i]
+                                }
+                            }]
+                        },
+                        Calendar_Notion_Name:  { 
+                            'select': {
+                                "name": gCal_calendarName[i]
+                            },
                         }
                     },
                 },
             )
-
-
-
-
-
-
-
 
         print(f'Added this event to Notion: {calName[i]}')
