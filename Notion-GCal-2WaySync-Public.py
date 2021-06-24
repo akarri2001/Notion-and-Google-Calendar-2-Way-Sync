@@ -107,7 +107,7 @@ try:
 except:
     #refresh the token
     import os
-    os.system(GCalTokenScriptAndLocation)    
+    os.system(runScript)    
     
     #SET UP THE GOOGLE CALENDAR API INTERFACE
 
