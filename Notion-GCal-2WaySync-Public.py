@@ -66,6 +66,11 @@ calendarDictionary = {
 }
 
 
+## doesn't delete the Notion task (yet), I'm waiting for the Python API to be updated to allow deleting tasks
+DELETE_OPTION = 0 
+#set at 0 if you want the delete column being checked off to mean that the gCal event and the Notion Event will be checked off. 
+#set at 1 if you want nothing deleted
+
 
 ##### DATABASE SPECIFIC EDITS
 
@@ -75,7 +80,7 @@ calendarDictionary = {
 #Please refer to the Template if you are confused: https://www.notion.so/akarri/2583098dfd32472ab6ca1ff2a8b2866d?v=3a1adf60f15748f08ed925a2eca88421
 
 
-Task_Notion_Name = 'Task' 
+Task_Notion_Name = 'Task Name' 
 Date_Notion_Name = 'Date'
 Initiative_Notion_Name = 'Initiative'
 ExtraInfo_Notion_Name = 'Extra Info'
@@ -85,6 +90,7 @@ GCalEventId_Notion_Name = 'GCal Event Id'
 LastUpdatedTime_Notion_Name  = 'Last Updated Time'
 Calendar_Notion_Name = 'Calendar'
 Current_Calendar_Id_Notion_Name = 'Current Calendar Id'
+Delete_Notion_Name = 'Done?'
 
 #######################################################################################
 ###               No additional user editing beyond this point is needed            ###
@@ -411,6 +417,12 @@ my_page = notion.databases.query(  #this query will return a dictionary that we 
                         }
                     }
                 ]   
+                },
+                {
+                    "property": Delete_Notion_Name, 
+                    "checkbox":  {
+                        "equals": False
+                    }
                 }
             ]
         },
@@ -590,6 +602,12 @@ my_page = notion.databases.query(
                         }
                     }
                 ]   
+                },
+                {
+                    "property": Delete_Notion_Name, 
+                    "checkbox":  {
+                        "equals": False
+                    }
                 }
             ]
         },
@@ -656,6 +674,12 @@ my_page = notion.databases.query(
                         }
                     }
                 ]   
+                },
+                {
+                    "property": Delete_Notion_Name, 
+                    "checkbox":  {
+                        "equals": False
+                    }
                 }
             ]
         },
@@ -810,6 +834,12 @@ my_page = notion.databases.query(
                         }
                     }
                 ]   
+                },
+                {
+                    "property": Delete_Notion_Name, 
+                    "checkbox":  {
+                        "equals": False
+                    }
                 }
             ]
         },
@@ -1131,7 +1161,6 @@ print(gCal_CalIds)
 CalNames = list(calendarDictionary.keys())
 CalIds = list(calendarDictionary.values())
 
-
 for i, gCalId in enumerate(gCal_CalIds): #instead of checking, just update the notion datebase with whatever calendar the event is on
     print('GcalId: ' + gCalId)
     my_page = notion.pages.update( ##### This puts the the GCal Id into the Notion Dashboard
@@ -1172,12 +1201,34 @@ my_page = notion.databases.query(
     **{
         "database_id": database_id,
         "filter": {
-                "property": GCalEventId_Notion_Name, 
-                "text":  {
-                    "is_not_empty": True
+                "and": [
+                {
+                    "property": GCalEventId_Notion_Name, 
+                    "text":  {
+                        "is_not_empty": True
+                    }
+                },
+                {
+                    "property": Delete_Notion_Name, 
+                    "checkbox":  {
+                        "equals": False
+                    }
                 }
+            ]
+        },
+    }
+)
+
+my_page = notion.databases.query( 
+    **{
+        "database_id": database_id,
+        "filter": {
+            "property": GCalEventId_Notion_Name, 
+            "text":  {
+                "is_not_empty": True
             }
         },
+    }
 )
 
 resultList = my_page['results']
@@ -1454,3 +1505,69 @@ for i in range(len(calIds)):
             )
 
         print(f'Added this event to Notion: {calName[i]}')
+
+
+
+
+###########################################################################
+##### Part 5: Deletion Sync -- If marked Done in Notion, then it will delete the GCal event (and the Notion event once Python API updates)
+###########################################################################
+
+
+my_page = notion.databases.query( 
+    **{
+        "database_id": database_id,
+        "filter": {
+            "and":[
+                {
+                    "property": GCalEventId_Notion_Name, 
+                    "text":  {
+                        "is_not_empty": True
+                    }
+                }, 
+                {
+                    "property": On_GCal_Notion_Name, 
+                    "checkbox":  {
+                        "equals": True
+                    }
+                },
+                {
+                    "property": Delete_Notion_Name, 
+                    "checkbox":  {
+                        "equals": True
+                    }
+                }
+            ]
+        },
+    }
+)
+
+resultList = my_page['results']
+
+if DELETE_OPTION == 0 and len(resultList) > 0: #delete gCal event (and Notion task once the Python API is updated)
+    CalendarList = []
+    CurrentCalList = []
+
+    for i, el in enumerate(resultList):
+        calendarID = calendarDictionary[el['properties'][Calendar_Notion_Name]['select']['name']]
+        eventId = el['properties'][GCalEventId_Notion_Name]['rich_text'][0]['text']['content']
+
+        
+        pageId = el['id']
+        
+        print(calendarID, eventId)
+
+        try:
+            service.events().delete(calendarId=calendarID, eventId=eventId).execute() 
+        except:
+            continue
+        
+        my_page = notion.pages.update( ##### Delete Notion task (diesn't work yet)
+            **{
+                "page_id": pageId, 
+                "archived": True, 
+                "properties":{} 
+            },
+        )
+
+        print(my_page)
