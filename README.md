@@ -6,6 +6,7 @@ WARNING: This repo will be undergoing a good bit of change to make more accessib
 REMINDER: No making monetary gain off of this product. The point of making this available was to make the tools accessible to everyone
 
 NEW FUNCTIONALITIES SINCE FIRST UPLOADING:
+- Option to delete gCal events if checked off as Done in Notion
 - Sync across multiple calendars and choose which calendar you would like to sync
 - Able to name the required Notion columns whatever you want and have the code work
 - Able to add in end times and sync that across both platforms
@@ -19,7 +20,7 @@ I'm not sure if this is the first one out there, but it is the only 2-way synchr
 
 The Notion-GCal-2WaySync-Public.py code is HEAVILY commented to describe each part of the code. Follow along and you'll be able to get a quick understanding of what logic is used for each step of the script. 
 Use this Notion Template as reference: 
-https://www.notion.so/akarri/2583098dfd32472ab6ca1ff2a8b2866d?v=3a1adf60f15748f08ed925a2eca88421 (multiple calendar)
+https://www.notion.so/akarri/de7bcf954c8847a4952202b93fab2dad?v=23e8972499124b5c84b67b9e08d0cc2c (multiple calendar)
 
 https://www.notion.so/akarri/47c0977120094511b0ab6cbf68b20c57?v=21c35762ede544818692acb1e8deefed (single calendar code (outdated))
 
