@@ -5,6 +5,10 @@ WARNING: This repo will be undergoing a good bit of change to make more accessib
 
 REMINDER: No making monetary gain off of this product. The point of making this available was to make the tools accessible to everyone
 
+Instructions to set up: https://docs.google.com/document/d/1uP-6EsmTlG_Gttg9jC0MBZKHpjccVapIeC1D1tR1yXc/edit?usp=sharing 
+
+
+
 NEW FUNCTIONALITIES SINCE FIRST UPLOADING:
 - Option to delete gCal events if checked off as Done in Notion
 - Sync across multiple calendars and choose which calendar you would like to sync
