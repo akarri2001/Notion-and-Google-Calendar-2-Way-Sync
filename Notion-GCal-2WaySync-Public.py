@@ -123,7 +123,7 @@ except:
     # result = service.calendarList().list().execute()
     # print(result['items'][:])
 
-    calendar = service.calendars().get(calendarId=calendarID).execute()
+    calendar = service.calendars().get(calendarId=DEFAULT_CALENDAR_ID).execute()
 
 
 
