@@ -47,7 +47,6 @@ When making events, the code will extract the event name, date/time, a category,
 Future Updates (dates subject to change)
 - ~~Able to name the required Notion columns whatever you want and have the code work (By June 5th)~~ ✅ (Done)
 - ~~Able to add in end times and sync that across both platforms (by June 15th)~~ ✅ (Done)
-- Video on how to install/use the tool for thoses who never coded (end of June/beginning of July)
 - ~~Able to add different events to different calendars depending on a Notion column (up in the air)~~ ✅ (Done)
 - Able to factor in recurring events (up in the air) (the way GCal API handles recurring events really funky, so help would be appreciated!)
 
