@@ -1,7 +1,7 @@
 # Notion-and-Google-Calendar-2-Way-Sync
 2 Way Sync Between a Notion Database and Google Calendar
 
-UPDATE: There seems to be some stuff broken when Notion updated their API again. I'm not going to be able to fix this until the school year is over due to classes but it will be fixed.
+UPDATE: There seems to be some stuff broken when Notion updated their API again. I'm not going to be able to fix this until the school year is over due to classes but it will be fixed in May 2022.
 
 WARNING: This repo will be undergoing a good bit of change to make more accessible for users of all skill levels. This is not a finished product and if you have suggestions, I would love them!
 
