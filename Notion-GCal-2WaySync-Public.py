@@ -86,7 +86,7 @@ RUN_SCRIPT = config['OTHER']['RUN_SCRIPT']
 calendarDictionary = {
     DEFAULT_CALENDAR_NAME: DEFAULT_CALENDAR_ID,
     # just typed some random ids but put the one for your calendars here
-
+    #'UofT Calendar': '3b03t1e6ojvscai0ln2kg6pcsk2q65he@import.calendar.google.com'
 }
 
 
@@ -1160,7 +1160,7 @@ calItems = events
 calName = [item['summary'] for item in calItems]
 
 # this is to get all of the calendarIds for each event
-gCal_calendarId = [item['organizer']['email'] for item in calItems]
+gCal_calendarId = [item['creator']['email'] for item in calItems]
 
 CalNames = list(calendarDictionary.keys())
 CalIds = list(calendarDictionary.values())
