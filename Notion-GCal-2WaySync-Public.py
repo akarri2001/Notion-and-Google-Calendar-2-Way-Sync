@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, date
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 import pickle
+import configparser
 
 
 ###########################################################################
@@ -67,7 +68,7 @@ calendarDictionary = {
 
 
 ## doesn't delete the Notion task (yet), I'm waiting for the Python API to be updated to allow deleting tasks
-DELETE_OPTION = 0 
+DELETE_OPTION = 0
 #set at 0 if you want the delete column being checked off to mean that the gCal event and the Notion Event will be checked off. 
 #set at 1 if you want nothing deleted
 
@@ -80,7 +81,7 @@ DELETE_OPTION = 0
 #Please refer to the Template if you are confused: https://www.notion.so/akarri/2583098dfd32472ab6ca1ff2a8b2866d?v=3a1adf60f15748f08ed925a2eca88421
 
 
-Task_Notion_Name = 'Task Name' 
+Task_Notion_Name = 'Task Name'
 Date_Notion_Name = 'Date'
 Initiative_Notion_Name = 'Initiative'
 ExtraInfo_Notion_Name = 'Extra Info'
@@ -110,11 +111,11 @@ service = build("calendar", "v3", credentials=credentials)
 #This is placed here because it can take a few seconds to start working and I want the most heavy tasks to occur first
 try:
     calendar = service.calendars().get(calendarId=DEFAULT_CALENDAR_ID).execute()
-except:
+except Exception:
     #refresh the token
     import os
     os.system(runScript)    
-    
+
     #SET UP THE GOOGLE CALENDAR API INTERFACE
 
     credentials = pickle.load(open(credentialsLocation, "rb"))
@@ -172,98 +173,34 @@ def makeTaskURL(ending, urlRoot):
 
 
 def makeCalEvent(eventName, eventDescription, eventStartTime, sourceURL, eventEndTime, calId):
- 
-    if eventStartTime.hour == 0 and eventStartTime.minute == 0 and eventEndTime == eventStartTime: #only startTime is given from the Notion Dashboard
+    if eventStartTime.hour == 0 and eventStartTime.minute == 0 and eventEndTime == eventStartTime:
         if AllDayEventOption == 1:
-            eventStartTime = datetime.combine(eventStartTime, datetime.min.time()) + timedelta(hours=DEFAULT_EVENT_START) ##make the events pop up at 8 am instead of 12 am
-            eventEndTime = eventStartTime + timedelta(minutes= DEFAULT_EVENT_LENGTH)
-            event = {
-                'summary': eventName,
-                'description': eventDescription,
-                'start': {
-                    'dateTime': eventStartTime.strftime("%Y-%m-%dT%H:%M:%S"),
-                    'timeZone': timezone,
-                },
-                'end': {
-                    'dateTime': eventEndTime.strftime("%Y-%m-%dT%H:%M:%S"),
-                    'timeZone': timezone,
-                }, 
-                'source': {
-                    'title': 'Notion Link',
-                    'url': sourceURL,
-                }
-            }
+            eventStartTime = datetime.combine(eventStartTime, datetime.min.time()) + timedelta(hours=DEFAULT_EVENT_START)
+
+            eventEndTime = eventStartTime + timedelta(minutes=DEFAULT_EVENT_LENGTH)
+            event = {'summary': eventName, 'description': eventDescription, 'start': {'dateTime': eventStartTime.strftime("%Y-%m-%dT%H:%M:%S"), 'timeZone': timezone}, 'end': {'dateTime': eventEndTime.strftime("%Y-%m-%dT%H:%M:%S"), 'timeZone': timezone}, 'source': {'title': 'Notion Link', 'url': sourceURL}}
+
         else:
-            eventEndTime = eventEndTime + timedelta(days=1) #gotta make it to 12AM the day after
-            event = {
-                'summary': eventName,
-                'description': eventDescription,
-                'start': {
-                    'date': eventStartTime.strftime("%Y-%m-%d"),
-                    'timeZone': timezone,
-                },
-                'end': {
-                    'date': eventEndTime.strftime("%Y-%m-%d"),
-                    'timeZone': timezone,
-                }, 
-                'source': {
-                    'title': 'Notion Link',
-                    'url': sourceURL,
-                }
-            }
-    elif eventStartTime.hour == 0 and eventStartTime.minute ==  0 and eventEndTime.hour == 0 and eventEndTime.minute == 0 and eventStartTime != eventEndTime:
-        
-        eventEndTime = eventEndTime + timedelta(days=1) #gotta make it to 12AM the day after
-        
-        event = {
-            'summary': eventName,
-            'description': eventDescription,
-            'start': {
-                'date': eventStartTime.strftime("%Y-%m-%d"),
-                'timeZone': timezone,
-            },
-            'end': {
-                'date': eventEndTime.strftime("%Y-%m-%d"),
-                'timeZone': timezone,
-            }, 
-            'source': {
-                'title': 'Notion Link',
-                'url': sourceURL,
-            }
-        }
-    
-    else: #just 2 datetimes passed in from the method call that are not at 12 AM
-        if eventStartTime.hour == 0 and eventStartTime.minute == 0 and eventEndTime != eventStartTime: #Start on Notion is 12 am and end is also given on Notion 
-            eventStartTime = eventStartTime #start will be 12 am
-            eventEndTime = eventEndTime #end will be whenever specified
-        elif eventStartTime.hour == 0 and eventStartTime.minute == 0: #if the datetime fed into this is only a date or is at 12 AM, then the event will fall under here
-            eventStartTime = datetime.combine(eventStartTime, datetime.min.time()) + timedelta(hours=DEFAULT_EVENT_START) ##make the events pop up at 8 am instead of 12 am
-            eventEndTime = eventStartTime + timedelta(minutes= DEFAULT_EVENT_LENGTH)  
-        elif eventEndTime == eventStartTime: #this would meant that only 1 datetime was actually on the notion dashboard 
-            eventStartTime = eventStartTime
-            eventEndTime = eventStartTime + timedelta(minutes= DEFAULT_EVENT_LENGTH) 
-        else: #if you give a specific start time to the event
+            eventEndTime = eventEndTime + timedelta(days=1)
+            event = {'summary': eventName, 'description': eventDescription, 'start': {'date': eventStartTime.strftime("%Y-%m-%d"), 'timeZone': timezone}, 'end': {'date': eventEndTime.strftime("%Y-%m-%d"), 'timeZone': timezone}, 'source': {'title': 'Notion Link', 'url': sourceURL}}
+
+    elif eventStartTime.hour == 0 and eventStartTime.minute == 0 and eventEndTime.hour == 0 and eventEndTime.minute == 0:
+        eventEndTime = eventEndTime + timedelta(days=1)
+        event = {'summary': eventName, 'description': eventDescription, 'start': {'date': eventStartTime.strftime("%Y-%m-%d"), 'timeZone': timezone}, 'end': {'date': eventEndTime.strftime("%Y-%m-%d"), 'timeZone': timezone}, 'source': {'title': 'Notion Link', 'url': sourceURL}}
+
+    else:
+        if eventStartTime.hour == 0 and eventStartTime.minute == 0:
             eventStartTime = eventStartTime
             eventEndTime = eventEndTime
-        
-        event = {
-            'summary': eventName,
-            'description': eventDescription,
-            'start': {
-                'dateTime': eventStartTime.strftime("%Y-%m-%dT%H:%M:%S"),
-                'timeZone': timezone,
-            },
-            'end': {
-                'dateTime': eventEndTime.strftime("%Y-%m-%dT%H:%M:%S"),
-                'timeZone': timezone,
-            }, 
-            'source': {
-                'title': 'Notion Link',
-                'url': sourceURL,
-            }
-        }    
-    print('Adding this event to calendar: ', eventName)
+        elif eventEndTime == eventStartTime:
+            eventStartTime = eventStartTime
+            eventEndTime = eventStartTime + timedelta(minutes=DEFAULT_EVENT_LENGTH)
+        else:
+            eventStartTime = eventStartTime
+            eventEndTime = eventEndTime
+        event = {'summary': eventName, 'description': eventDescription, 'start': {'dateTime': eventStartTime.strftime("%Y-%m-%dT%H:%M:%S"), 'timeZone': timezone}, 'end': {'dateTime': eventEndTime.strftime("%Y-%m-%dT%H:%M:%S"), 'timeZone': timezone}, 'source': {'title': 'Notion Link', 'url': sourceURL}}
 
+    print('Adding this event to calendar: ', eventName)
     print(event)
     x = service.events().insert(calendarId=calId, body=event).execute()
     return x['id']
@@ -273,107 +210,42 @@ def makeCalEvent(eventName, eventDescription, eventStartTime, sourceURL, eventEn
 #METHOD TO UPDATE A CALENDAR EVENT
 
 def upDateCalEvent(eventName, eventDescription, eventStartTime, sourceURL, eventId, eventEndTime, currentCalId, CalId):
-
-    if eventStartTime.hour == 0 and eventStartTime.minute == 0 and eventEndTime == eventStartTime:  #you're given a single date
+    if eventStartTime.hour == 0 and eventStartTime.minute == 0 and eventEndTime == eventStartTime:
         if AllDayEventOption == 1:
-            eventStartTime = datetime.combine(eventStartTime, datetime.min.time()) + timedelta(hours=DEFAULT_EVENT_START) ##make the events pop up at 8 am instead of 12 am
-            eventEndTime = eventStartTime + timedelta(minutes= DEFAULT_EVENT_LENGTH)
-            event = {
-                'summary': eventName,
-                'description': eventDescription,
-                'start': {
-                    'dateTime': eventStartTime.strftime("%Y-%m-%dT%H:%M:%S"),
-                    'timeZone': timezone,
-                },
-                'end': {
-                    'dateTime': eventEndTime.strftime("%Y-%m-%dT%H:%M:%S"),
-                    'timeZone': timezone,
-                }, 
-                'source': {
-                    'title': 'Notion Link',
-                    'url': sourceURL,
-                }
-            }
+            eventStartTime = datetime.combine(eventStartTime, datetime.min.time()) + timedelta(hours=DEFAULT_EVENT_START)
+
+            eventEndTime = eventStartTime + timedelta(minutes=DEFAULT_EVENT_LENGTH)
+            event = {'summary': eventName, 'description': eventDescription, 'start': {'dateTime': eventStartTime.strftime("%Y-%m-%dT%H:%M:%S"), 'timeZone': timezone}, 'end': {'dateTime': eventEndTime.strftime("%Y-%m-%dT%H:%M:%S"), 'timeZone': timezone}, 'source': {'title': 'Notion Link', 'url': sourceURL}}
+
         else:
-            eventEndTime = eventEndTime + timedelta(days=1) #gotta make it to 12AM the day after
-            event = {
-                'summary': eventName,
-                'description': eventDescription,
-                'start': {
-                    'date': eventStartTime.strftime("%Y-%m-%d"),
-                    'timeZone': timezone,
-                },
-                'end': {
-                    'date': eventEndTime.strftime("%Y-%m-%d"),
-                    'timeZone': timezone,
-                }, 
-                'source': {
-                    'title': 'Notion Link',
-                    'url': sourceURL,
-                }
-            }
-    elif eventStartTime.hour == 0 and eventStartTime.minute ==  0 and eventEndTime.hour == 0 and eventEndTime.minute == 0 and eventStartTime != eventEndTime: #it's a multiple day event
-        
-        eventEndTime = eventEndTime + timedelta(days=1) #gotta make it to 12AM the day after
-        
-        event = {
-            'summary': eventName,
-            'description': eventDescription,
-            'start': {
-                'date': eventStartTime.strftime("%Y-%m-%d"),
-                'timeZone': timezone,
-            },
-            'end': {
-                'date': eventEndTime.strftime("%Y-%m-%d"),
-                'timeZone': timezone,
-            }, 
-            'source': {
-                'title': 'Notion Link',
-                'url': sourceURL,
-            }
-        }
-    
-    else: #just 2 datetimes passed in 
-        if eventStartTime.hour == 0 and eventStartTime.minute == 0 and eventEndTime != eventStartTime: #Start on Notion is 12 am and end is also given on Notion 
-            eventStartTime = eventStartTime #start will be 12 am
-            eventEndTime = eventEndTime #end will be whenever specified
-        elif eventStartTime.hour == 0 and eventStartTime.minute == 0: #if the datetime fed into this is only a date or is at 12 AM, then the event will fall under here
-            eventStartTime = datetime.combine(eventStartTime, datetime.min.time()) + timedelta(hours=DEFAULT_EVENT_START) ##make the events pop up at 8 am instead of 12 am
-            eventEndTime = eventStartTime + timedelta(minutes= DEFAULT_EVENT_LENGTH)  
-        elif eventEndTime == eventStartTime: #this would meant that only 1 datetime was actually on the notion dashboard 
+            eventEndTime = eventEndTime + timedelta(days=1)
+            event = {'summary': eventName, 'description': eventDescription, 'start': {'date': eventStartTime.strftime("%Y-%m-%d"), 'timeZone': timezone}, 'end': {'date': eventEndTime.strftime("%Y-%m-%d"), 'timeZone': timezone}, 'source': {'title': 'Notion Link', 'url': sourceURL}}
+
+    elif eventStartTime.hour == 0 and eventStartTime.minute == 0 and eventEndTime.hour == 0 and eventEndTime.minute == 0:
+        eventEndTime = eventEndTime + timedelta(days=1)
+        event = {'summary': eventName, 'description': eventDescription, 'start': {'date': eventStartTime.strftime("%Y-%m-%d"), 'timeZone': timezone}, 'end': {'date': eventEndTime.strftime("%Y-%m-%d"), 'timeZone': timezone}, 'source': {'title': 'Notion Link', 'url': sourceURL}}
+
+    else:
+        if eventStartTime.hour == 0 and eventStartTime.minute == 0:
             eventStartTime = eventStartTime
-            eventEndTime = eventStartTime + timedelta(minutes= DEFAULT_EVENT_LENGTH) 
-        else: #if you give a specific start time to the event
+            eventEndTime = eventEndTime
+        elif eventEndTime == eventStartTime:
             eventStartTime = eventStartTime
-            eventEndTime = eventEndTime 
-        event = {
-            'summary': eventName,
-            'description': eventDescription,
-            'start': {
-                'dateTime': eventStartTime.strftime("%Y-%m-%dT%H:%M:%S"),
-                'timeZone': timezone,
-            },
-            'end': {
-                'dateTime': eventEndTime.strftime("%Y-%m-%dT%H:%M:%S"),
-                'timeZone': timezone,
-            }, 
-            'source': {
-                'title': 'Notion Link',
-                'url': sourceURL,
-            }
-        }    
+            eventEndTime = eventStartTime + timedelta(minutes=DEFAULT_EVENT_LENGTH)
+        else:
+            eventStartTime = eventStartTime
+            eventEndTime = eventEndTime
+        event = {'summary': eventName, 'description': eventDescription, 'start': {'dateTime': eventStartTime.strftime("%Y-%m-%dT%H:%M:%S"), 'timeZone': timezone}, 'end': {'dateTime': eventEndTime.strftime("%Y-%m-%dT%H:%M:%S"), 'timeZone': timezone}, 'source': {'title': 'Notion Link', 'url': sourceURL}}
+
     print('Updating this event to calendar: ', eventName)
+    if currentCalId != CalId:
+        print(f'Event {eventId}')
+        print(f'CurrentCal {currentCalId}')
+        print(f'NewCal {CalId}')
+        x = service.events().move(calendarId=currentCalId, eventId=eventId, destination=CalId).execute()
 
-    if currentCalId == CalId:
-        x = service.events().update(calendarId=CalId, eventId = eventId, body=event).execute()
-
-    else: #When we have to move the event to a new calendar. We must move the event over to the new calendar and then update the information on the event
-        print('Event ' + eventId)
-        print('CurrentCal ' + currentCalId)
-        print('NewCal ' + CalId)
-        x= service.events().move(calendarId= currentCalId , eventId= eventId, destination=CalId).execute()
         print('New event id: ' + x['id'])
-        x = service.events().update(calendarId=CalId, eventId = eventId, body=event).execute()
+    x = service.events().update(calendarId=CalId, eventId=eventId, body=event).execute()
 
     return x['id']
 
