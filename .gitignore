@@ -6,3 +6,4 @@ venv/
 # other credentials
 client_secret.json
 token.pkl
+config.ini
