@@ -1288,7 +1288,7 @@ CalNames = list(calendarDictionary.keys())
 CalIds = list(calendarDictionary.values())
 
 #gCal_calendarName = [CalNames[CalIds.index(x)] for x in gCal_calendarId]
-gCal_calendarName = organizer_map(DEFAULT_CALENDAR_ID,CalNames,CalIds,gCal_calendarId)
+gCal_calendarName = organizer_map(DEFAULT_CALENDAR_NAME,CalNames,CalIds,gCal_calendarId)
 calStartDates = []
 calEndDates = []
 
