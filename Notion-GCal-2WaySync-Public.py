@@ -1240,14 +1240,43 @@ for result in resultList:
 
 
 ##Get the GCal Ids and other Event Info from Google Calendar 
+'''Maps all events created by organizers which are not listed in the calendar dictionary (External organizers, called EO's) to a set calendar
+
+:param NAME : the name of the calendar that EO events are mapped to
+:type NAME : str, reequired
+
+:param names: the list of calendar names in Notion , CalNames
+:type names: list, required
+
+:param ids: the list of calendar Id's in Notion, calIds
+:type ids: list, required
+
+:param orgs: the organizer emails, gCal-calendarid
+:type orgs: list
+
+:raises ValueError: when an event in a calendar has been made by an EO
+
+:return: a list for gCal_calenderName, the "notion name" of each organizer
+:rtype: list
+'''
+def organizer_map(NAME : str ,names : list,ids : list ,orgs: list) -> list:
+    ret = []
+    for org in orgs:
+        try:
+            index = ids.index(org)
+            ret.append(names[index])
+        except ValueError:
+            ret.append(NAME)
+    return ret
+
+
 
 events = []
 for el in calendarDictionary.keys(): #get all the events from all calendars of interest
     x = service.events().list(calendarId = calendarDictionary[el], maxResults = 2000, timeMin = googleQuery() ).execute()    
     events.extend(x['items'])
-    
-print(events)
-
+   
+#print(events)
 # calItems = events['items']
 calItems = events
 
@@ -1257,10 +1286,12 @@ gCal_calendarId = [item['organizer']['email'] for item in calItems] #this is to 
 
 CalNames = list(calendarDictionary.keys())
 CalIds = list(calendarDictionary.values())
-gCal_calendarName = [ CalNames[CalIds.index(x)] for x in gCal_calendarId]
 
+#gCal_calendarName = [CalNames[CalIds.index(x)] for x in gCal_calendarId]
+gCal_calendarName = organizer_map(DEFAULT_CALENDAR_NAME,CalNames,CalIds,gCal_calendarId)
 calStartDates = []
 calEndDates = []
+
 for el in calItems:
     try:
         calStartDates.append(datetime.strptime(el['start']['dateTime'][:-6], "%Y-%m-%dT%H:%M:%S"))
